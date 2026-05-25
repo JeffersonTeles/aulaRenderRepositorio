@@ -1,21 +1,4 @@
-# Lista de Anotações - Node.js + Express + PostgreSQL
-
-Projeto de lista de anotações desenvolvido com:
-
-- Node.js
-- Express
-- PostgreSQL
-- HTML
-- CSS
-- JavaScript
-
-A aplicação permite:
-
-- Criar anotações
-- Visualizar anotações
-- Remover anotações
-- Reordenar anotações com drag and drop
-- Persistência de dados em PostgreSQL
+# Lista de Anotações - Render
 
 ---
 
@@ -25,7 +8,7 @@ A aplicação permite:
 
 Abra o repositório no GitHub.
 
----
+
 
 ## 2. Criar um Fork
 
@@ -37,84 +20,7 @@ Fork
 
 no canto superior direito do GitHub.
 
----
 
-## 3. Confirmar criação
-
-O GitHub criará automaticamente uma cópia completa do projeto na sua conta.
-
----
-
-# Resultado
-
-Você terá um novo repositório no seu GitHub contendo todos os arquivos do projeto original da aula.
----
-
-# Dependências do projeto
-
-O projeto utiliza:
-
-- express
-- pg
-
----
-
-# Como instalar as dependências
-
-## Instalar Node.js
-
-Download:
-
-https://nodejs.org
-
----
-
-## Verificar instalação
-
-```bash
-node -v
-npm -v
-```
-
----
-
-## Instalar dependências do projeto
-
-Dentro da pasta do projeto execute:
-
-```bash
-npm install
-```
-
-Isso instalará automaticamente:
-
-```txt
-express
-pg
-```
-
----
-
-# Estrutura do projeto
-
-```txt
-projeto/
-│
-├── db.js
-├── server.js
-├── package.json
-│
-├── public/
-│   ├── index.html
-│   │
-│   ├── css/
-│   │   └── style.css
-│   │
-│   └── js/
-│       └── script.js
-```
-
----
 
 # Configuração do PostgreSQL no Render
 
@@ -267,13 +173,10 @@ CREATE TABLE notes (
 );
 ```
 
----
-
-## 6. Atualizar posições
+Inline:
 
 ```sql
-UPDATE notes
-SET position = id;
+CREATE TABLE notes (id SERIAL PRIMARY KEY, title VARCHAR(30), text TEXT NOT NULL, position INTEGER DEFAULT 0);
 ```
 
 ---
@@ -379,30 +282,6 @@ O Render irá:
 - instalar dependências
 - iniciar o Express
 - conectar no PostgreSQL
-
----
-
-# Rodar localmente
-
-## Iniciar servidor
-
-```bash
-node server.js
-```
-
-ou:
-
-```bash
-npm start
-```
-
----
-
-# Acessar aplicação
-
-```txt
-http://localhost:3000
-```
 
 ---
 
