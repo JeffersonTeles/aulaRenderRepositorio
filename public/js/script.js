@@ -1,25 +1,38 @@
 let listItems = [];
+
 let itemToDeleteId = null;
 
-const listElement = document.getElementById('central-list');
+let dragSourceId = null;
 
-const overlay = document.getElementById('background-overlay');
+const listElement =
+    document.getElementById('central-list');
 
-const addPopup = document.getElementById('add-popup');
+const overlay =
+    document.getElementById('background-overlay');
 
-const deletePopup = document.getElementById('delete-popup');
+const addPopup =
+    document.getElementById('add-popup');
 
-const viewPopup = document.getElementById('view-popup');
+const deletePopup =
+    document.getElementById('delete-popup');
 
-const popupInput = document.getElementById('popup-input');
+const viewPopup =
+    document.getElementById('view-popup');
 
-const popupTitle = document.getElementById('popup-title');
+const popupInput =
+    document.getElementById('popup-input');
 
-const viewTitle = document.getElementById('view-title');
+const popupTitle =
+    document.getElementById('popup-title');
 
-const viewContent = document.getElementById('view-content');
+const viewTitle =
+    document.getElementById('view-title');
 
-const titleCount = document.getElementById('view-title-count');
+const viewContent =
+    document.getElementById('view-content');
+
+const titleCount =
+    document.getElementById('view-title-count');
 
 /* =========================
    CONTADOR
@@ -33,31 +46,50 @@ function updateTitleCount() {
 }
 
 /* =========================
-   CARREGAR NOTAS
+   CARREGAR
 ========================= */
 
 async function loadNotes() {
 
-    try {
+    const response = await fetch('/notes');
 
-        const response = await fetch('/notes');
+    const data = await response.json();
 
-        const data = await response.json();
+    listItems = data;
 
-        listItems = data;
-
-        renderList();
-
-    } catch (err) {
-
-        console.error(err);
-
-    }
+    renderList();
 
 }
 
 /* =========================
-   RENDERIZAR
+   SALVAR ORDEM
+========================= */
+
+async function saveOrder() {
+
+    const items = listItems.map(
+        (item, index) => ({
+            id: item.id,
+            position: index + 1
+        })
+    );
+
+    await fetch('/notes/reorder', {
+
+        method: 'PUT',
+
+        headers: {
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify({ items })
+
+    });
+
+}
+
+/* =========================
+   RENDER
 ========================= */
 
 function renderList() {
@@ -70,12 +102,20 @@ function renderList() {
 
         li.className = 'list-item';
 
+        li.draggable = true;
+
+        li.dataset.id = item.id;
+
         li.innerHTML = `
             <span class="item-title">
                 ${item.title || 'Sem título'}
             </span>
 
             <div class="item-bottom-row">
+
+                <span class="icon-btn drag-handle">
+                    ☰
+                </span>
 
                 <span class="item-text">
                     ${item.text}
@@ -90,7 +130,7 @@ function renderList() {
 
         /* VISUALIZAR */
 
-        li.querySelector('.item-title').onclick = () => {
+        const openView = () => {
 
             viewTitle.textContent =
                 item.title || 'Anotação';
@@ -104,23 +144,16 @@ function renderList() {
 
         };
 
-        li.querySelector('.item-text').onclick = () => {
+        li.querySelector('.item-title')
+            .onclick = openView;
 
-            viewTitle.textContent =
-                item.title || 'Anotação';
-
-            viewContent.textContent =
-                item.text;
-
-            viewPopup.style.display = 'block';
-
-            overlay.style.display = 'flex';
-
-        };
+        li.querySelector('.item-text')
+            .onclick = openView;
 
         /* REMOVER */
 
-        li.querySelector('.delete-btn').onclick = () => {
+        li.querySelector('.delete-btn')
+            .onclick = () => {
 
             itemToDeleteId = item.id;
 
@@ -130,6 +163,66 @@ function renderList() {
 
         };
 
+        /* DRAG */
+
+        li.addEventListener('dragstart', (e) => {
+
+            dragSourceId = item.id;
+
+            e.dataTransfer.setData(
+                'text/plain',
+                item.id
+            );
+
+        });
+
+        li.addEventListener('dragover', (e) => {
+
+            e.preventDefault();
+
+        });
+
+        li.addEventListener('drop', async (e) => {
+
+            e.preventDefault();
+
+            const sourceId =
+                dragSourceId;
+
+            const targetId =
+                item.id;
+
+            if (sourceId === targetId)
+                return;
+
+            const sourceIndex =
+                listItems.findIndex(
+                    i => i.id == sourceId
+                );
+
+            const targetIndex =
+                listItems.findIndex(
+                    i => i.id == targetId
+                );
+
+            const [movedItem] =
+                listItems.splice(
+                    sourceIndex,
+                    1
+                );
+
+            listItems.splice(
+                targetIndex,
+                0,
+                movedItem
+            );
+
+            renderList();
+
+            await saveOrder();
+
+        });
+
         listElement.appendChild(li);
 
     });
@@ -137,26 +230,30 @@ function renderList() {
 }
 
 /* =========================
-   ADICIONAR NOTA
+   ADICIONAR
 ========================= */
 
-document.getElementById('add-save-btn').onclick =
-async () => {
+document.getElementById(
+    'add-save-btn'
+).onclick = async () => {
 
-    const text = popupInput.value.trim();
+    const text =
+        popupInput.value.trim();
 
-    const title = popupTitle.value.trim();
+    const title =
+        popupTitle.value.trim();
 
     if (!text) return;
 
-    try {
-
-        const response = await fetch('/notes', {
+    const response = await fetch(
+        '/notes',
+        {
 
             method: 'POST',
 
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type':
+                    'application/json'
             },
 
             body: JSON.stringify({
@@ -164,69 +261,59 @@ async () => {
                 text
             })
 
-        });
+        }
+    );
 
-        const newNote = await response.json();
+    const newNote =
+        await response.json();
 
-        listItems.unshift(newNote);
+    listItems.push(newNote);
 
-        renderList();
+    renderList();
 
-        addPopup.style.display = 'none';
+    closeAll();
 
-        overlay.style.display = 'none';
+    popupInput.value = '';
 
-        popupInput.value = '';
+    popupTitle.value = '';
 
-        popupTitle.value = '';
-
-        updateTitleCount();
-
-    } catch (err) {
-
-        console.error(err);
-
-    }
+    updateTitleCount();
 
 };
 
 /* =========================
-   REMOVER NOTA
+   REMOVER
 ========================= */
 
-document.getElementById('delete-remove-btn').onclick =
-async () => {
+document.getElementById(
+    'delete-remove-btn'
+).onclick = async () => {
 
-    try {
-
-        await fetch(`/notes/${itemToDeleteId}`, {
+    await fetch(
+        `/notes/${itemToDeleteId}`,
+        {
             method: 'DELETE'
-        });
+        }
+    );
 
-        listItems =
-            listItems.filter(
-                item => item.id !== itemToDeleteId
-            );
+    listItems =
+        listItems.filter(
+            item => item.id !== itemToDeleteId
+        );
 
-        renderList();
+    renderList();
 
-        deletePopup.style.display = 'none';
-
-        overlay.style.display = 'none';
-
-    } catch (err) {
-
-        console.error(err);
-
-    }
+    closeAll();
 
 };
 
 /* =========================
-   ABRIR POPUP
+   POPUPS
 ========================= */
 
-document.getElementById('add-button').onclick = () => {
+document.getElementById(
+    'add-button'
+).onclick = () => {
 
     addPopup.style.display = 'block';
 
@@ -234,15 +321,17 @@ document.getElementById('add-button').onclick = () => {
 
 };
 
-/* =========================
-   FECHAR POPUPS
-========================= */
+document.getElementById(
+    'add-cancel-btn'
+).onclick = closeAll;
 
-document.getElementById('add-cancel-btn').onclick = closeAll;
+document.getElementById(
+    'delete-cancel-btn'
+).onclick = closeAll;
 
-document.getElementById('delete-cancel-btn').onclick = closeAll;
-
-document.getElementById('view-close-btn').onclick = closeAll;
+document.getElementById(
+    'view-close-btn'
+).onclick = closeAll;
 
 overlay.onclick = (e) => {
 

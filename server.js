@@ -10,12 +10,20 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+/* =========================
+   HOME
+========================= */
+
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+
+    res.sendFile(
+        path.join(__dirname, 'public', 'index.html')
+    );
+
 });
 
 /* =========================
-   LISTAR NOTAS
+   LISTAR
 ========================= */
 
 app.get('/notes', async (req, res) => {
@@ -23,7 +31,7 @@ app.get('/notes', async (req, res) => {
     try {
 
         const result = await pool.query(
-            'SELECT * FROM notes ORDER BY id DESC'
+            'SELECT * FROM notes ORDER BY position ASC'
         );
 
         res.json(result.rows);
@@ -41,7 +49,7 @@ app.get('/notes', async (req, res) => {
 });
 
 /* =========================
-   SALVAR NOTA
+   CRIAR
 ========================= */
 
 app.post('/notes', async (req, res) => {
@@ -50,9 +58,19 @@ app.post('/notes', async (req, res) => {
 
         const { title, text } = req.body;
 
+        const maxPosition = await pool.query(
+            'SELECT COALESCE(MAX(position), 0) + 1 AS next FROM notes'
+        );
+
+        const position = maxPosition.rows[0].next;
+
         const result = await pool.query(
-            'INSERT INTO notes(title, text) VALUES($1, $2) RETURNING *',
-            [title, text]
+            `
+            INSERT INTO notes(title, text, position)
+            VALUES($1, $2, $3)
+            RETURNING *
+            `,
+            [title, text, position]
         );
 
         res.json(result.rows[0]);
@@ -70,7 +88,7 @@ app.post('/notes', async (req, res) => {
 });
 
 /* =========================
-   REMOVER NOTA
+   REMOVER
 ========================= */
 
 app.delete('/notes/:id', async (req, res) => {
@@ -100,6 +118,49 @@ app.delete('/notes/:id', async (req, res) => {
 
 });
 
+/* =========================
+   REORDENAR
+========================= */
+
+app.put('/notes/reorder', async (req, res) => {
+
+    try {
+
+        const { items } = req.body;
+
+        for (const item of items) {
+
+            await pool.query(
+                `
+                UPDATE notes
+                SET position = $1
+                WHERE id = $2
+                `,
+                [item.position, item.id]
+            );
+
+        }
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            error: 'Erro ao reordenar'
+        });
+
+    }
+
+});
+
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+
+    console.log(
+        `Servidor rodando na porta ${PORT}`
+    );
+
 });
