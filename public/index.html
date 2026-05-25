@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Minimalista</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <main>
+        <h2 class="notes-heading">Anotações</h2>
+        <ul id="central-list"></ul>
+    </main>
+
+    <button id="add-button">+</button>
+
+    <div id="background-overlay">
+        <div id="add-popup" class="popup">
+            <h3>Adicionar Novo Item</h3>
+            <div class="title-row">
+                <input type="text" id="popup-title" placeholder="Título (opcional)" maxlength="30">
+                <small id="view-title-count" class="title-count">0 / 30</small>
+            </div>
+            <textarea id="popup-input" placeholder="Seu texto aqui..." rows="4"></textarea>
+            <div class="popup-buttons">
+                <button id="add-cancel-btn" class="btn btn-cancel">Cancelar</button>
+                <button id="add-save-btn" class="btn btn-save">Salvar</button>
+            </div>
+        </div>
+
+        <div id="view-popup" class="popup">
+            <h3 id="view-title">Visualizar Anotação</h3>
+            <div id="view-content" class="view-content"></div>
+            <div class="popup-buttons">
+                <button id="view-close-btn" class="btn btn-cancel">Fechar</button>
+            </div>
+        </div>
+
+        <div id="delete-popup" class="popup popup-small">
+            <h3>Remover Item</h3>
+            <p>Tem certeza de que deseja remover este item?</p>
+            <div class="popup-buttons">
+                <button id="delete-cancel-btn" class="btn btn-cancel">Cancelar</button>
+                <button id="delete-remove-btn" class="btn btn-remove">Remover</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+</body>
+</html>
