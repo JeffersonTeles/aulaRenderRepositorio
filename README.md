@@ -19,32 +19,35 @@ A aplicação permite:
 
 ---
 
-# Como clonar o repositório
+# Como criar um novo repositório com os arquivos do projeto
 
-## 1. Abrir o terminal
+## 1. Acessar o repositório da aula
 
-Pode ser:
-
-- CMD
-- PowerShell
-- Terminal do VSCode
+Abra o repositório no GitHub.
 
 ---
 
-## 2. Clonar o projeto
+## 2. Criar um Fork
 
-```bash
-git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
+Clique em:
+
+```txt
+Fork
 ```
+
+no canto superior direito do GitHub.
 
 ---
 
-## 3. Entrar na pasta
+## 3. Confirmar criação
 
-```bash
-cd SEU-REPOSITORIO
-```
+O GitHub criará automaticamente uma cópia completa do projeto na sua conta.
 
+---
+
+# Resultado
+
+Você terá um novo repositório no seu GitHub contendo todos os arquivos do projeto original da aula.
 ---
 
 # Dependências do projeto
