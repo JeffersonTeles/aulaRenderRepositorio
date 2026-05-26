@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: aula-render-app
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node setup-db.js && node server.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false # O usuário deve inserir o valor manualmente no painel do Render ou via CLI
